@@ -1,6 +1,9 @@
 require('dotenv').config()
-const express = require('express');
+
+const bcrypt = require('bcryptjs');
 const cors = require('cors');
+const express = require('express');
+const jwt = require('jsonwebtoken');
 const prisma = require('./lib/prisma');
 const app = express();
 const port = process.env.PORT || 8000;
@@ -30,8 +33,6 @@ app.get('/users', async (req, res) => {
         res.status(500).json({ error: "Database connection error"});
     }
 })
-
-const bcrypt = require('bcryptjs');
 
 app.post('/register', async (req, res) => {
     try {
@@ -95,8 +96,15 @@ app.post('/login', async (req, res) => {
             return res.status(401).json({ error: "Invalid email or password."});
         }
 
+        const token = jwt.sign(
+            { userId: user.id, email: user.email },
+            process.env.JWT_SECRET,
+            { expiresIn: '1h'}
+        );
+
         res.status(200).json({
             message: "Login successful!",
+            token,
             user: {
                 id: user.id,
                 email: user.email,
@@ -108,6 +116,7 @@ app.post('/login', async (req, res) => {
         console.error(error);
         res.status(500).json({ error: "Login failed due to a server error."});
     }
+
 });
 
 
