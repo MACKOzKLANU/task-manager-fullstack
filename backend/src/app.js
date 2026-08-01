@@ -1,5 +1,6 @@
 require('dotenv').config()
 
+const authenticate = require('./middleware/auth');
 const bcrypt = require('bcryptjs');
 const cors = require('cors');
 const express = require('express');
@@ -24,9 +25,11 @@ app.get('/health', (req, res) => {
     });
 });
 
-app.get('/users', async (req, res) => {
+app.get('/users', authenticate, async (req, res) => {
     try {
-        const users = await prisma.user.findMany();
+        const users = await prisma.user.findMany({
+            select: { id: true, email: true, name: true }
+        });
         res.json(users);
     } catch (error) {
         console.error(error);
