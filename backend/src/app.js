@@ -33,9 +33,93 @@ app.get('/users', authenticate, async (req, res) => {
         res.json(users);
     } catch (error) {
         console.error(error);
-        res.status(500).json({ error: "Database connection error"});
+        res.status(500).json({ error: "Database connection error" });
     }
 })
+
+app.post('/tasks', authenticate, async (req, res) => {
+    try {
+        const { title, description } = req.body;
+
+        if (!title) {
+            return res.status(400).json({ error: "Title is required." });
+        }
+
+        const newTask = await prisma.task.create({
+            data: {
+                title,
+                description,
+                authorId: req.user.userId
+            }
+        });
+
+        res.status(201).json(newTask);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Failed to create the task." });
+    }
+})
+
+app.get('/tasks', authenticate, async (req, res) => {
+    try {
+        const tasks = await prisma.user.findUnique({
+            where: { id: req.user.userId }
+        }).tasks();
+
+        res.json(tasks || []);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Database error." });
+    }
+})
+
+app.patch('/tasks/:id', authenticate, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { title, description, completed } = req.body;
+
+        const task = await prisma.task.findUnique({
+            where: { id: parseInt(id) }
+        });
+
+        if (!task || task.authorId !== req.user.userId) {
+            return res.status(403).json({ error: "You don’t have permission to edit this task." });
+        }
+
+        const updatedTask = await prisma.task.update({
+            where: { id: parseInt(id) },
+            data: { title, description, completed }
+        });
+
+        res.json(updatedTask);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Failed to update the task." });
+    }
+})
+
+app.delete('/tasks/:id', authenticate, async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const task = await prisma.task.findUnique({
+            where: { id: parseInt(id) }
+        });
+
+        if (!task || task.authorId !== req.user.userId) {
+            return res.status(403).json({ error: "You cannot delete someone else’s task." });
+        }
+
+        await prisma.task.delete({
+            where: { id: parseInt(id) }
+        });
+
+        res.json({ message: "Task deleted successfully." });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Failed to delete the task." });
+    }
+});
 
 app.post('/register', async (req, res) => {
     try {
@@ -96,13 +180,13 @@ app.post('/login', async (req, res) => {
         const isPasswordValid = await bcrypt.compare(password, user.password);
 
         if (!isPasswordValid) {
-            return res.status(401).json({ error: "Invalid email or password."});
+            return res.status(401).json({ error: "Invalid email or password." });
         }
 
         const token = jwt.sign(
             { userId: user.id, email: user.email },
             process.env.JWT_SECRET,
-            { expiresIn: '1h'}
+            { expiresIn: '1h' }
         );
 
         res.status(200).json({
@@ -117,7 +201,7 @@ app.post('/login', async (req, res) => {
 
     } catch (error) {
         console.error(error);
-        res.status(500).json({ error: "Login failed due to a server error."});
+        res.status(500).json({ error: "Login failed due to a server error." });
     }
 
 });

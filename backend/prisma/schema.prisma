@@ -18,6 +18,17 @@ model User {
   email String @unique
   password String
   name String?
+  tasks Task[]
   createdAt DateTime @default(now())
 }
 
+model Task {
+  id Int @id @default(autoincrement())
+  title String
+  description String?
+  completed Boolean @default(false)
+  author User @relation (fields: [authorId], references: [id])
+  authorId Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
