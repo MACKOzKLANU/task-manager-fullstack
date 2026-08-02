@@ -5,6 +5,7 @@ const bcrypt = require('bcryptjs');
 const cors = require('cors');
 const express = require('express');
 const jwt = require('jsonwebtoken');
+const { registerSchema, taskSchema } = require('./validations/schemas');
 const prisma = require('./lib/prisma');
 const app = express();
 const port = process.env.PORT || 8000;
@@ -39,11 +40,16 @@ app.get('/users', authenticate, async (req, res) => {
 
 app.post('/tasks', authenticate, async (req, res) => {
     try {
-        const { title, description } = req.body;
+        const validation = taskSchema.safeParse(req.body);
 
-        if (!title) {
-            return res.status(400).json({ error: "Title is required." });
+        if (!validation.success) {
+            return res.status(400).json({
+                error: "Task validation error",
+                details: validation.error.issues.map(err => err.message)
+            });
         }
+
+        const { title, description } = validation.data;
 
         const newTask = await prisma.task.create({
             data: {
@@ -123,11 +129,16 @@ app.delete('/tasks/:id', authenticate, async (req, res) => {
 
 app.post('/register', async (req, res) => {
     try {
-        const { email, password, name } = req.body;
+        const validation = registerSchema.safeParse(req.body);
 
-        if (!email || !password) {
-            return res.status(400).json({ error: "Email and password are required!" });
+        if (!validation.success) {
+            return res.status(400).json({
+                error: "Validation error",
+                details: validation.error.issues.map(err => err.message)
+            });
         }
+
+        const { email, password, name } = validation.data
 
         const existingUser = await prisma.user.findUnique({
             where: { email }
