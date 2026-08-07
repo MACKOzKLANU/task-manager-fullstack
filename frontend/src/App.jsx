@@ -1,7 +1,8 @@
 import { useAuth } from "./context/AuthContext";
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import Register from "./pages/Register";
-const Login = () => <div className="text-white p-10">Strona Logowania (W budowie)</div>;
+import Login from "./pages/Login";
+
 const Dashboard = () => <div className="text-white p-10">Twój Panel Zadań (w budowie)</div>;
 
 function App() {
@@ -14,8 +15,8 @@ function App() {
     <BrowserRouter>
       <div className="min-h-screen bg-slate-950 text-slate-200">
         <Routes>
-          <Route path="/register" element={<Register />} />
-          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={user ? <Navigate to="/" /> : <Register />} />
+          <Route path="/login" element={user ? <Navigate to="/" /> : <Login />} />
 
           <Route
             path="/"
