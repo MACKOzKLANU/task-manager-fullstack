@@ -2,7 +2,7 @@ const z = require('zod');
 
 const registerSchema = z.object({
     email: z.string().email("Invalid email address."),
-    password: z.string().min(8, "Your password must contain at least 8 characters.”"),
+    password: z.string().min(8, "Your password must contain at least 8 characters."),
     name: z.string().optional()
 });
 
