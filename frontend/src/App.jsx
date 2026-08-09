@@ -3,8 +3,7 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import Register from "./pages/Register";
 import Login from "./pages/Login";
 import Navbar from "./components/Navbar";
-
-const Dashboard = () => <div className="text-white p-10">Twój Panel Zadań (w budowie)</div>;
+import Dashboard from "./pages/Dashboard";
 
 function App() {
   const { user, loading } = useAuth();
