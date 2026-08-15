@@ -2,11 +2,22 @@ import { LayoutGrid, Plus } from "lucide-react";
 import { useEffect, useState } from "react";
 import TaskCard from "../components/TaskCard";
 import api from "../api/axios";
+import CreateTaskModal from "../components/CreateTaskModal";
 
 function Dashboard() {
     const [tasks, setTasks] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const [isModalOpen, setisModalOpen] = useState(false);
+
+    const fetchTasks = async () => {
+        try {
+            const response = await api.get('/tasks');
+            setTasks(response.data);
+        } catch (error) {
+            setError("Data fetch error.");
+        }
+    };
 
     useEffect(() => {
         const fetchTasks = async () => {
@@ -42,7 +53,9 @@ function Dashboard() {
                     </p>
                 </div>
 
-                <button className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-xl font-bold transition-all shadow-lg shadow-blue-900/20 active:scale-95">
+                <button 
+                onClick={() => setisModalOpen(true)}
+                className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-xl font-bold transition-all shadow-lg shadow-blue-900/20 active:scale-95">
                     <Plus className="w-5 h-5" /> New task
                 </button>
             </div>
@@ -66,6 +79,11 @@ function Dashboard() {
                     <p className="text-slate-600 text-sm mt-2">Use the button above to add your first task.</p>
                 </div>
             )}
+            <CreateTaskModal
+                isOpen={(isModalOpen)}
+                onClose={() => setisModalOpen(false)}
+                onTaskCreated={fetchTasks}
+            />
         </div>
     );
 };
