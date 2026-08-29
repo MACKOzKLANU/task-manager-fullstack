@@ -1,5 +1,5 @@
 import { LayoutGrid, Plus } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import TaskCard from "../components/TaskCard";
 import api from "../api/axios";
 import CreateTaskModal from "../components/CreateTaskModal";
@@ -12,50 +12,50 @@ function Dashboard() {
     const [isModalOpen, setisModalOpen] = useState(false);
     const [isAlertVisible, setIsAlertVisible] = useState(false);
     const [alertMessage, setAlertMessage] = useState("");
+    const alertTimeoutRef = useRef(null);
+
+    const showSuccessAlert = (message) => {
+        setAlertMessage(message);
+        setIsAlertVisible(true);
+
+        if (alertTimeoutRef.current) {
+            clearTimeout(alertTimeoutRef.current);
+        }
+
+        alertTimeoutRef.current = setTimeout(() => {
+            setIsAlertVisible(false);
+        }, 3000);
+    };
 
     const fetchTasks = async () => {
         try {
             const response = await api.get('/tasks');
             setTasks(response.data);
+            setError('');
         } catch (error) {
-            setError("Data fetch error.");
+            console.error("Task fetch error", error);
+            setError("Failed to connect to the project database.");
+        } finally {
+            setLoading(false);
         }
     };
 
     useEffect(() => {
-        const fetchTasks = async () => {
-            try {
-                const response = await api.get('/tasks');
-                setTasks(response.data);
-            } catch (error) {
-                console.error("Task fetch error", error);
-                setError("Failed to connect to the project database.");
-            } finally {
-                setLoading(false);
-            }
-        };
-
         fetchTasks();
     }, [])
 
     const handleDeleteTask = async (taskId) => {
+        const previousTasks = tasks;
+
+        setTasks(prev => prev.filter(task => task.id !== taskId));
+
         try {
             const response = await api.delete(`/tasks/${taskId}`);
             if (response.status === 200) {
-                setIsAlertVisible(true);
-
-                setTimeout(() => {
-                    setIsAlertVisible(false);
-                }, 3000);
-
-                let tempTasks = tasks;
-                tempTasks = tempTasks.filter((task) => task.id != taskId);
-
-                setTasks(tempTasks);
-                setAlertMessage("Task deleted successfully")
+                showSuccessAlert("Task deleted successfully");
             }
-
         } catch (error) {
+            setTasks(previousTasks);
             console.error("Error deleting the task", error);
             setError("Failed to delete the task");
         }
