@@ -1,6 +1,6 @@
 import { CheckCircle2, Circle, Clock, Trash2 } from 'lucide-react'
 
-function TaskCard({ task }) {
+function TaskCard({ task, handleDeleteTask }) {
     const date = new Date(task.createdAt).toLocaleDateString();
 
     return (
@@ -15,7 +15,7 @@ function TaskCard({ task }) {
                     </p>
                 </div>
 
-                <div className={`${task.completed ? 'text-green-500' : 'text-blue-500'}`}>
+                <div className={`cursor-pointer ${task.completed ? 'text-green-500' : 'text-blue-500'}`}>
                     {task.completed ? <CheckCircle2 className='w-6 h-6' /> : <Circle className='w-6 h-6' />}
                 </div>
             </div>
@@ -26,7 +26,7 @@ function TaskCard({ task }) {
                     <span>{date}</span>
                 </div>
 
-                <button className="text-slate-600 hover:text-red-500 transition-colors p-1">
+                <button onClick={() => handleDeleteTask(task.id)} className="cursor-pointer text-slate-600 hover:text-red-500 transition-colors p-1">
                     <Trash2 className="w-4 h-4" />
                 </button>
             </div>

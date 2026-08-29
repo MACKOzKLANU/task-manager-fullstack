@@ -3,12 +3,15 @@ import { useEffect, useState } from "react";
 import TaskCard from "../components/TaskCard";
 import api from "../api/axios";
 import CreateTaskModal from "../components/CreateTaskModal";
+import SuccessAlert from "../components/SuccessAlert";
 
 function Dashboard() {
     const [tasks, setTasks] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [isModalOpen, setisModalOpen] = useState(false);
+    const [isAlertVisible, setIsAlertVisible] = useState(false);
+    const [alertMessage, setAlertMessage] = useState("");
 
     const fetchTasks = async () => {
         try {
@@ -35,6 +38,29 @@ function Dashboard() {
         fetchTasks();
     }, [])
 
+    const handleDeleteTask = async (taskId) => {
+        try {
+            const response = await api.delete(`/tasks/${taskId}`);
+            if (response.status === 200) {
+                setIsAlertVisible(true);
+
+                setTimeout(() => {
+                    setIsAlertVisible(false);
+                }, 3000);
+
+                let tempTasks = tasks;
+                tempTasks = tempTasks.filter((task) => task.id != taskId);
+
+                setTasks(tempTasks);
+                setAlertMessage("Task deleted successfully")
+            }
+
+        } catch (error) {
+            console.error("Error deleting the task", error);
+            setError("Failed to delete the task");
+        }
+    }
+
     if (loading) return (
         <div className="flex justify-center items-center h-64 text-blue-500 animate-pulse font-mono">
             Loading...
@@ -53,24 +79,24 @@ function Dashboard() {
                     </p>
                 </div>
 
-                <button 
-                onClick={() => setisModalOpen(true)}
-                className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-xl font-bold transition-all shadow-lg shadow-blue-900/20 active:scale-95">
+                <button
+                    onClick={() => setisModalOpen(true)}
+                    className="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-xl font-bold transition-all shadow-lg shadow-blue-900/20 active:scale-95">
                     <Plus className="w-5 h-5" /> New task
                 </button>
             </div>
 
-            {error && 
-            <div className="p-4 bg-red-500/10 border border-red-500 text-red-500 rounded-xl mb-6">
-                {error} 
-            </div>
+            {error &&
+                <div className="p-4 bg-red-500/10 border border-red-500 text-red-500 rounded-xl mb-6">
+                    {error}
+                </div>
             }
 
             {tasks.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {
                         tasks.map(task => (
-                            <TaskCard key={task.id} task={task} />
+                            <TaskCard key={task.id} handleDeleteTask={handleDeleteTask} task={task} />
                         ))}
                 </div>
             ) : (
@@ -79,6 +105,7 @@ function Dashboard() {
                     <p className="text-slate-600 text-sm mt-2">Use the button above to add your first task.</p>
                 </div>
             )}
+            {isAlertVisible && <SuccessAlert message={alertMessage} />}
             <CreateTaskModal
                 isOpen={(isModalOpen)}
                 onClose={() => setisModalOpen(false)}
