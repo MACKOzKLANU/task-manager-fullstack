@@ -61,6 +61,35 @@ function Dashboard() {
         }
     }
 
+    const handleChangeTaskStatus = async (taskId) => {
+        const currentTask = tasks.find(task => task.id === taskId);
+
+        if (!currentTask) {
+            return;
+        }
+        const nextCompleted = !currentTask.completed;
+        const previousTasks = [...tasks];
+
+        setTasks(prev => 
+            prev.map(task => 
+                task.id === taskId ? { ...task, completed: nextCompleted } : task            
+            )
+        );
+        try {
+            const response = await api.patch(`/tasks/${taskId}`, {
+                completed: nextCompleted
+            });
+            if (response.status === 200) {
+                showSuccessAlert("Task updated successfully");
+            }
+        } catch (error) {
+            setTasks(previousTasks);
+            console.error("Error updating the task", error);
+            setError("Failed to update the task");
+
+        }
+    }
+
     if (loading) return (
         <div className="flex justify-center items-center h-64 text-blue-500 animate-pulse font-mono">
             Loading...
@@ -96,7 +125,7 @@ function Dashboard() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {
                         tasks.map(task => (
-                            <TaskCard key={task.id} handleDeleteTask={handleDeleteTask} task={task} />
+                            <TaskCard key={task.id} handleChangeTaskStatus={handleChangeTaskStatus} handleDeleteTask={handleDeleteTask} task={task} />
                         ))}
                 </div>
             ) : (
