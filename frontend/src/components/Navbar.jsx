@@ -1,6 +1,8 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext"
 import { CheckSquare, LogOut, UserIcon } from 'lucide-react'
+import { useEffect } from "react";
+import logoutRef from "../helpers/logout";
 function Navbar() {
     const { user, logout } = useAuth();
     const navigate = useNavigate();
@@ -9,6 +11,11 @@ function Navbar() {
         logout();
         navigate('/login');
     };
+
+    // Expose handleLogout to non-React code (axios.js) via logoutRef
+    useEffect(() => {
+        logoutRef.logout = handleLogout;
+    }, [handleLogout]);
 
     if (!user) return null;
 

@@ -34,7 +34,8 @@ function Dashboard() {
             setError('');
         } catch (error) {
             console.error("Task fetch error", error);
-            setError("Failed to connect to the project database.");
+            setError("Failed to connect to the database");
+            
         } finally {
             setLoading(false);
         }
