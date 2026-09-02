@@ -1,42 +1,24 @@
-import { X } from "lucide-react";
+import { useEffect } from "react";
 import { useState } from "react";
 import api from "../api/axios";
+import { X } from "lucide-react";
 
-function CreateTaskModal({ isOpen, onClose, onTaskCreated })
-{
+function EditTaskModal({ isOpen, onClose, onTaskEdited, taskId }) {
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState('');
     const [error, setError] = useState('');
 
     if (!isOpen) return null;
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setLoading(true);
-        setError('');
-
-        try {
-            await api.post('/tasks', { title, description });
-
-            setTitle('');
-            setDescription('');
-
-            onTaskCreated();
-            onClose();
-        } catch (error) {
-            const msg = error.response?.data?.details?.[0] || error.response?.data?.error || "Error while creating the task.";
-            setError(msg);
-        } finally {
-            setLoading(false);
-        }
-    };
+    useEffect(() => {
+    }, [])
 
     return (
         <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-slate-950/80 background-blur-sm">
             <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl overflow-hidden">
                 <div className="flex justify-between items-center p-6 border-b border-slate-800">
-                    <h2 className="text-xl font-bold text-white uppercase tracking-tight">New Task</h2>
+                    <h2 className="text-xl font-bold text-white uppercase tracking-tight">Edit Task</h2>
                     <button onClick={onClose} className="text-slate-500 hover:text-white transition-colors">
                         <X className="w-6 h-6" />
                     </button>
@@ -78,7 +60,7 @@ function CreateTaskModal({ isOpen, onClose, onTaskCreated })
                             type="submit"
                             disabled={loading}
                             className="flex-1 p-3 bg-blue-600 hover:bg-blue-500 disabled:bg-blue-800 text-white font-bold rounded-xl transition-all shadow-lg shadow-blue-900/20"
-                            >{loading ? "Saving..." : "Add Project"}
+                            >{loading ? "Saving..." : "Save Changes"}
                         </button>
                     </div>
                 </form>
@@ -87,4 +69,4 @@ function CreateTaskModal({ isOpen, onClose, onTaskCreated })
     );
 };
 
-export default CreateTaskModal;
+export default EditTaskModal;

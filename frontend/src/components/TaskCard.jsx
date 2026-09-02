@@ -1,4 +1,4 @@
-import { CheckCircle2, Circle, Clock, Trash2 } from 'lucide-react'
+import { CheckCircle2, Circle, Clock, Pencil, Trash2 } from 'lucide-react'
 
 function TaskCard({ task, handleDeleteTask, handleChangeTaskStatus }) {
     const date = new Date(task.createdAt).toLocaleDateString();
@@ -15,8 +15,13 @@ function TaskCard({ task, handleDeleteTask, handleChangeTaskStatus }) {
                     </p>
                 </div>
 
-                <div onClick={() => handleChangeTaskStatus(task.id)} className={`cursor-pointer ${task.completed ? 'text-green-500' : 'text-blue-500'}`}>
-                    {task.completed ? <CheckCircle2 className='w-6 h-6' /> : <Circle className='w-6 h-6' />}
+                <div className='flex flex-col gap-1'>
+                    <div onClick={() => handleChangeTaskStatus(task.id)} className={`cursor-pointer hover:text-green-300 ${task.completed ? 'text-green-500' : 'text-blue-500'}`}>
+                        {task.completed ? <CheckCircle2 className='w-6 h-6' /> : <Circle className='w-6 h-6' />}
+                    </div>
+                    <div className='text-slate-600 cursor-pointer hover:text-slate-300'>
+                        <Pencil className='w-6 h-6' />
+                    </div>
                 </div>
             </div>
 
