@@ -3,16 +3,40 @@ import { useState } from "react";
 import api from "../api/axios";
 import { X } from "lucide-react";
 
-function EditTaskModal({ isOpen, onClose, onTaskEdited, taskId }) {
+function EditTaskModal({ isOpen, onClose, onTaskEdited, task, showSuccessAlert }) {
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
-    const [loading, setLoading] = useState('');
+    const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+
+    useEffect(() => {
+        if (!task || !isOpen) return;
+
+        setTitle(task.title);
+        setDescription(task.description);
+
+    }, [task, isOpen])
 
     if (!isOpen) return null;
 
-    useEffect(() => {
-    }, [])
+    const handleEditTask = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        setError('');
+
+        try {
+            await api.patch(`/tasks/${task.id}`, { title, description });
+
+            await onTaskEdited();
+            onClose();
+            showSuccessAlert("Task updated successfully")
+        } catch (error) {
+            const msg = error.response?.data?.details?.[0] || error.response?.data?.error || "Error while editting the task.";
+            setError(msg);
+        } finally {
+            setLoading(false);
+        }
+    } 
 
     return (
         <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-slate-950/80 background-blur-sm">
@@ -24,7 +48,7 @@ function EditTaskModal({ isOpen, onClose, onTaskEdited, taskId }) {
                     </button>
                 </div>
 
-                <form onSubmit={handleSubmit} className="p-6 space-y-4">
+                <form onSubmit={handleEditTask} className="p-6 space-y-4">
                     {error && <div className="p-3 bg-red-500/10 border border-red-500 text-red-500 text-sm rounded-lg">
                     {error}</div>}
 

@@ -1,8 +1,11 @@
 import { CheckCircle2, Circle, Clock, Pencil, Trash2 } from 'lucide-react'
 
-function TaskCard({ task, handleDeleteTask, handleChangeTaskStatus }) {
+function TaskCard({ task, handleDeleteTask, handleChangeTaskStatus, setEditingTask, setIsEditTaskModalOpen }) {
     const date = new Date(task.createdAt).toLocaleDateString();
-
+    const handleEditClick = (task) => {
+        setIsEditTaskModalOpen(true);
+        setEditingTask(task);
+    }
     return (
         <div className="bg-slate-900 border border-slate-800 p-5 rounded-2xl hover:border-blue-500/50 transition-all group shadow-lg">
             <div className="flex justify-between items-start gap-4">
@@ -19,7 +22,7 @@ function TaskCard({ task, handleDeleteTask, handleChangeTaskStatus }) {
                     <div onClick={() => handleChangeTaskStatus(task.id)} className={`cursor-pointer hover:text-green-300 ${task.completed ? 'text-green-500' : 'text-blue-500'}`}>
                         {task.completed ? <CheckCircle2 className='w-6 h-6' /> : <Circle className='w-6 h-6' />}
                     </div>
-                    <div className='text-slate-600 cursor-pointer hover:text-slate-300'>
+                    <div onClick={() => handleEditClick(task)} className='text-slate-600 cursor-pointer hover:text-slate-300'>
                         <Pencil className='w-6 h-6' />
                     </div>
                 </div>
