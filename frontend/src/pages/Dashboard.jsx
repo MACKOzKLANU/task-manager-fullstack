@@ -4,6 +4,7 @@ import TaskCard from "../components/TaskCard";
 import api from "../api/axios";
 import CreateTaskModal from "../components/CreateTaskModal";
 import SuccessAlert from "../components/SuccessAlert";
+import EditTaskModal from "../components/EditTaskModal";
 
 function Dashboard() {
     const [tasks, setTasks] = useState([]);
@@ -12,6 +13,8 @@ function Dashboard() {
     const [isModalOpen, setisModalOpen] = useState(false);
     const [isAlertVisible, setIsAlertVisible] = useState(false);
     const [alertMessage, setAlertMessage] = useState("");
+    const [isEditTaskModalOpen, setIsEditTaskModalOpen] = useState(false);
+    const [editingTask, setEditingTask] = useState(null);
     const alertTimeoutRef = useRef(null);
 
     const showSuccessAlert = (message) => {
@@ -126,7 +129,7 @@ function Dashboard() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {
                         tasks.map(task => (
-                            <TaskCard key={task.id} handleChangeTaskStatus={handleChangeTaskStatus} handleDeleteTask={handleDeleteTask} task={task} />
+                            <TaskCard key={task.id} handleChangeTaskStatus={handleChangeTaskStatus} handleDeleteTask={handleDeleteTask} setEditingTask={setEditingTask} setIsEditTaskModalOpen={setIsEditTaskModalOpen} task={task} />
                         ))}
                 </div>
             ) : (
@@ -140,6 +143,13 @@ function Dashboard() {
                 isOpen={(isModalOpen)}
                 onClose={() => setisModalOpen(false)}
                 onTaskCreated={fetchTasks}
+            />
+            <EditTaskModal
+            isOpen={(isEditTaskModalOpen)}
+            onClose={() => setIsEditTaskModalOpen(false)}
+            onTaskEdited={fetchTasks}
+            task={editingTask}
+            showSuccessAlert={showSuccessAlert}
             />
         </div>
     );

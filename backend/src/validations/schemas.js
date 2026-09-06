@@ -7,7 +7,7 @@ const registerSchema = z.object({
 });
 
 const taskSchema = z.object({
-    title: z.string().min(3, "The title must contain at least 3 characters.").max(100),
+    title: z.string().min(3, "The title must contain at least 3 characters.").max(100).optional(),
     description: z.string().optional()
 });
 

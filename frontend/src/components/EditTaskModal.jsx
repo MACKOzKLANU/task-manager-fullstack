@@ -1,48 +1,54 @@
-import { X } from "lucide-react";
+import { useEffect } from "react";
 import { useState } from "react";
 import api from "../api/axios";
+import { X } from "lucide-react";
 
-function CreateTaskModal({ isOpen, onClose, onTaskCreated })
-{
+function EditTaskModal({ isOpen, onClose, onTaskEdited, task, showSuccessAlert }) {
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
+    useEffect(() => {
+        if (!task || !isOpen) return;
+
+        setTitle(task.title);
+        setDescription(task.description);
+
+    }, [task, isOpen])
+
     if (!isOpen) return null;
 
-    const handleSubmit = async (e) => {
+    const handleEditTask = async (e) => {
         e.preventDefault();
         setLoading(true);
         setError('');
 
         try {
-            await api.post('/tasks', { title, description });
+            await api.patch(`/tasks/${task.id}`, { title, description });
 
-            setTitle('');
-            setDescription('');
-
-            onTaskCreated();
+            await onTaskEdited();
             onClose();
+            showSuccessAlert("Task updated successfully")
         } catch (error) {
-            const msg = error.response?.data?.details?.[0] || error.response?.data?.error || "Error while creating the task.";
+            const msg = error.response?.data?.details?.[0] || error.response?.data?.error || "Error while editting the task.";
             setError(msg);
         } finally {
             setLoading(false);
         }
-    };
+    } 
 
     return (
         <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-slate-950/80 background-blur-sm">
             <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl overflow-hidden">
                 <div className="flex justify-between items-center p-6 border-b border-slate-800">
-                    <h2 className="text-xl font-bold text-white uppercase tracking-tight">New Task</h2>
+                    <h2 className="text-xl font-bold text-white uppercase tracking-tight">Edit Task</h2>
                     <button onClick={onClose} className="text-slate-500 hover:text-white transition-colors">
                         <X className="w-6 h-6" />
                     </button>
                 </div>
 
-                <form onSubmit={handleSubmit} className="p-6 space-y-4">
+                <form onSubmit={handleEditTask} className="p-6 space-y-4">
                     {error && <div className="p-3 bg-red-500/10 border border-red-500 text-red-500 text-sm rounded-lg">
                     {error}</div>}
 
@@ -78,7 +84,7 @@ function CreateTaskModal({ isOpen, onClose, onTaskCreated })
                             type="submit"
                             disabled={loading}
                             className="flex-1 p-3 bg-blue-600 hover:bg-blue-500 disabled:bg-blue-800 text-white font-bold rounded-xl transition-all shadow-lg shadow-blue-900/20"
-                            >{loading ? "Saving..." : "Add Project"}
+                            >{loading ? "Saving..." : "Save Changes"}
                         </button>
                     </div>
                 </form>
@@ -87,4 +93,4 @@ function CreateTaskModal({ isOpen, onClose, onTaskCreated })
     );
 };
 
-export default CreateTaskModal;
+export default EditTaskModal;

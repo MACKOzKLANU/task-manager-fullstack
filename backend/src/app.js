@@ -86,7 +86,18 @@ app.get('/tasks', authenticate, async (req, res) => {
 app.patch('/tasks/:id', authenticate, async (req, res) => {
     try {
         const { id } = req.params;
-        const { title, description, completed } = req.body;
+
+        const validation = taskSchema.safeParse(req.body);
+
+        if (!validation.success) {
+            return res.status(400).json({
+                error: "Task validation error",
+                details: validation.error.issues.map(err => err.message)
+            });
+        }
+        const { title, description } = validation.data;
+
+        const { completed } = req.body
 
         const task = await prisma.task.findUnique({
             where: { id: parseInt(id) }
