@@ -1,4 +1,4 @@
-import { LayoutGrid, Plus } from "lucide-react";
+import { LayoutGrid, Plus, Search } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import TaskCard from "../components/TaskCard";
 import api from "../api/axios";
@@ -15,6 +15,7 @@ function Dashboard() {
     const [alertMessage, setAlertMessage] = useState("");
     const [isEditTaskModalOpen, setIsEditTaskModalOpen] = useState(false);
     const [editingTask, setEditingTask] = useState(null);
+    const [searchText, setSearchText] = useState('');
     const alertTimeoutRef = useRef(null);
 
     const showSuccessAlert = (message) => {
@@ -47,6 +48,7 @@ function Dashboard() {
     useEffect(() => {
         fetchTasks();
     }, [])
+    
 
     const handleDeleteTask = async (taskId) => {
         const previousTasks = tasks;
@@ -94,6 +96,8 @@ function Dashboard() {
         }
     }
 
+    const filteredTasks = tasks.filter(task => task.title.toLowerCase().includes(searchText.toLowerCase()));
+
     if (loading) return (
         <div className="flex justify-center items-center h-64 text-blue-500 animate-pulse font-mono">
             Loading...
@@ -125,17 +129,34 @@ function Dashboard() {
                 </div>
             }
 
-            {tasks.length > 0 ? (
+            <div className="max-w-sm mb-8">
+                <form role="search" onSubmit={(e) => e.preventDefault()}>
+                    <div className="flex items-center border border-slate-800 rounded-2xl p-1 bg-slate-900 focus-within:border-blue-500 transition-all">
+                        <label htmlFor="search" className="sr-only">Search</label>
+                        <input type="search" value={searchText} onChange={(e) => setSearchText(e.target.value) } placeholder="Search..." className="flex-1 bg-transparent px-3 py-2 text-white placeholder-slate-500 focus:outline-none" />
+                        <button type="submit" className="bg-blue-600 hover:bg-blue-500 rounded-xl px-3 py-2 transition-all">
+                            <Search className="w-4 h-4 text-white"></Search>
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            {filteredTasks.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {
-                        tasks.map(task => (
+                        filteredTasks.map(task => (
                             <TaskCard key={task.id} handleChangeTaskStatus={handleChangeTaskStatus} handleDeleteTask={handleDeleteTask} setEditingTask={setEditingTask} setIsEditTaskModalOpen={setIsEditTaskModalOpen} task={task} />
                         ))}
                 </div>
-            ) : (
+            ) : tasks.length === 0 ? (
                 <div className="text-center py-20 bg-slate-900/50 rounded-3xl border-2 border-dashed border-slate-800">
                     <p className="text-slate-500 font-mono text-ls">The project repository is empty.</p>
                     <p className="text-slate-600 text-sm mt-2">Use the button above to add your first task.</p>
+                </div>
+            ) : (
+                <div className="text-center py-20 bg-slate-900/50 rounded-3xl border-2 border-dashed border-slate-800">
+                    <p className="text-slate-500 font-mono text-ls">No tasks match your search.</p>
+                    <p className="text-slate-600 text-sm mt-2">Try something different</p>
                 </div>
             )}
             {isAlertVisible && <SuccessAlert message={alertMessage} />}
