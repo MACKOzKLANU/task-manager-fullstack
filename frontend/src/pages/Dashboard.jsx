@@ -1,10 +1,11 @@
-import { LayoutGrid, Plus, Search } from "lucide-react";
+import { LayoutGrid, Plus } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import TaskCard from "../components/TaskCard";
 import api from "../api/axios";
 import CreateTaskModal from "../components/CreateTaskModal";
 import SuccessAlert from "../components/SuccessAlert";
 import EditTaskModal from "../components/EditTaskModal";
+import SearchBar from "../components/SearchBar";
 
 function Dashboard() {
     const [tasks, setTasks] = useState([]);
@@ -16,6 +17,8 @@ function Dashboard() {
     const [isEditTaskModalOpen, setIsEditTaskModalOpen] = useState(false);
     const [editingTask, setEditingTask] = useState(null);
     const [searchText, setSearchText] = useState('');
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const [sortBy, setSortBy] = useState('date-desc');
     const alertTimeoutRef = useRef(null);
 
     const showSuccessAlert = (message) => {
@@ -39,7 +42,7 @@ function Dashboard() {
         } catch (error) {
             console.error("Task fetch error", error);
             setError("Failed to connect to the database");
-            
+
         } finally {
             setLoading(false);
         }
@@ -48,7 +51,7 @@ function Dashboard() {
     useEffect(() => {
         fetchTasks();
     }, [])
-    
+
 
     const handleDeleteTask = async (taskId) => {
         const previousTasks = tasks;
@@ -76,9 +79,9 @@ function Dashboard() {
         const nextCompleted = !currentTask.completed;
         const previousTasks = [...tasks];
 
-        setTasks(prev => 
-            prev.map(task => 
-                task.id === taskId ? { ...task, completed: nextCompleted } : task            
+        setTasks(prev =>
+            prev.map(task =>
+                task.id === taskId ? { ...task, completed: nextCompleted } : task
             )
         );
         try {
@@ -97,6 +100,28 @@ function Dashboard() {
     }
 
     const filteredTasks = tasks.filter(task => task.title.toLowerCase().includes(searchText.toLowerCase()));
+    
+    const sortLabels = {
+        'date-desc': 'Newest first',
+        'date-asc': 'Oldest first',
+        'name-asc': 'Name A-Z',
+        'name-desc': 'Name Z-A',
+    };
+
+    const sortedTasks = [...filteredTasks].sort((a, b) => {
+        switch (sortBy) {
+            case 'date-desc':
+                return new Date(b.createdAt) - new Date(a.createdAt);
+            case 'date-asc':
+                return new Date(a.createdAt) - new Date(b.createdAt);
+            case 'name-asc':
+                return a.title.toLowerCase().localeCompare(b.title.toLowerCase());
+            case 'name-desc':
+                return b.title.toLowerCase().localeCompare(a.title.toLowerCase());
+            default:
+                return 0;
+            }
+    })
 
     if (loading) return (
         <div className="flex justify-center items-center h-64 text-blue-500 animate-pulse font-mono">
@@ -129,22 +154,31 @@ function Dashboard() {
                 </div>
             }
 
-            <div className="max-w-sm mb-8">
-                <form role="search" onSubmit={(e) => e.preventDefault()}>
-                    <div className="flex items-center border border-slate-800 rounded-2xl p-1 bg-slate-900 focus-within:border-blue-500 transition-all">
-                        <label htmlFor="search" className="sr-only">Search</label>
-                        <input type="search" value={searchText} onChange={(e) => setSearchText(e.target.value) } placeholder="Search..." className="flex-1 bg-transparent px-3 py-2 text-white placeholder-slate-500 focus:outline-none" />
-                        <button type="submit" className="bg-blue-600 hover:bg-blue-500 rounded-xl px-3 py-2 transition-all">
-                            <Search className="w-4 h-4 text-white"></Search>
+            <SearchBar searchText={searchText} setSearchText={setSearchText} />
+
+            <div className="mb-5 relative">
+                <button onClick={() => setIsDropdownOpen(!isDropdownOpen)} className="bg-blue-600 hover:bg-blue-500 rounded-xl px-3 py-2 transition-all">{sortLabels[sortBy]}</button>
+                {isDropdownOpen &&
+                    <div className="mt-2 flex z-50 absolute flex-col border border-slate-800 rounded-2xl p-1 bg-slate-900 transition-all w-48">
+                        <button onClick={() => { setSortBy('date-desc'); setIsDropdownOpen(false);}} className="bg-slate-800 rounded-2xl p-1 text-white hover:bg-slate-700 transition-all w-full mb-1">
+                            Newest first
                         </button>
-                    </div>
-                </form>
+                        <button onClick={() => { setSortBy('date-asc'); setIsDropdownOpen(false);}} className="bg-slate-800 rounded-2xl p-1 text-white hover:bg-slate-700 transition-all w-full mb-1">
+                            Oldest first
+                        </button>
+                        <button onClick={() => { setSortBy('name-asc'); setIsDropdownOpen(false);}} className="bg-slate-800 rounded-2xl p-1 text-white hover:bg-slate-700 transition-all w-full mb-1">
+                            Name A-Z
+                        </button>
+                        <button onClick={() => { setSortBy('name-desc'); setIsDropdownOpen(false);}} className="bg-slate-800 rounded-2xl p-1 text-white hover:bg-slate-700 transition-all w-full mb-1">
+                            Name Z-A
+                        </button>
+                    </div>}
             </div>
 
             {filteredTasks.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {
-                        filteredTasks.map(task => (
+                        sortedTasks.map(task => (
                             <TaskCard key={task.id} handleChangeTaskStatus={handleChangeTaskStatus} handleDeleteTask={handleDeleteTask} setEditingTask={setEditingTask} setIsEditTaskModalOpen={setIsEditTaskModalOpen} task={task} />
                         ))}
                 </div>
@@ -166,11 +200,11 @@ function Dashboard() {
                 onTaskCreated={fetchTasks}
             />
             <EditTaskModal
-            isOpen={(isEditTaskModalOpen)}
-            onClose={() => setIsEditTaskModalOpen(false)}
-            onTaskEdited={fetchTasks}
-            task={editingTask}
-            showSuccessAlert={showSuccessAlert}
+                isOpen={(isEditTaskModalOpen)}
+                onClose={() => setIsEditTaskModalOpen(false)}
+                onTaskEdited={fetchTasks}
+                task={editingTask}
+                showSuccessAlert={showSuccessAlert}
             />
         </div>
     );
