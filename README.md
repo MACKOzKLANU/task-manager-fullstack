@@ -76,7 +76,7 @@ Open two terminals:
 - [x] Full CRUD functionality for Tasks
 - [x] Protected Route Middleware
 - [x] Responsive Dashboard UI
-- [ ] Task filtering and search functionality
+- [x] Task filtering and search functionality
 - [ ] Global notification system (Toasts)
 - [ ] User profile management
 
