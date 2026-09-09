@@ -6,6 +6,7 @@ import CreateTaskModal from "../components/CreateTaskModal";
 import SuccessAlert from "../components/SuccessAlert";
 import EditTaskModal from "../components/EditTaskModal";
 import SearchBar from "../components/SearchBar";
+import SortingDropdown from "../components/SortingDropdown";
 
 function Dashboard() {
     const [tasks, setTasks] = useState([]);
@@ -100,13 +101,6 @@ function Dashboard() {
     }
 
     const filteredTasks = tasks.filter(task => task.title.toLowerCase().includes(searchText.toLowerCase()));
-    
-    const sortLabels = {
-        'date-desc': 'Newest first',
-        'date-asc': 'Oldest first',
-        'name-asc': 'Name A-Z',
-        'name-desc': 'Name Z-A',
-    };
 
     const sortedTasks = [...filteredTasks].sort((a, b) => {
         switch (sortBy) {
@@ -120,7 +114,7 @@ function Dashboard() {
                 return b.title.toLowerCase().localeCompare(a.title.toLowerCase());
             default:
                 return 0;
-            }
+        }
     })
 
     if (loading) return (
@@ -156,24 +150,7 @@ function Dashboard() {
 
             <SearchBar searchText={searchText} setSearchText={setSearchText} />
 
-            <div className="mb-5 relative">
-                <button onClick={() => setIsDropdownOpen(!isDropdownOpen)} className="bg-blue-600 hover:bg-blue-500 rounded-xl px-3 py-2 transition-all">{sortLabels[sortBy]}</button>
-                {isDropdownOpen &&
-                    <div className="mt-2 flex z-50 absolute flex-col border border-slate-800 rounded-2xl p-1 bg-slate-900 transition-all w-48">
-                        <button onClick={() => { setSortBy('date-desc'); setIsDropdownOpen(false);}} className="bg-slate-800 rounded-2xl p-1 text-white hover:bg-slate-700 transition-all w-full mb-1">
-                            Newest first
-                        </button>
-                        <button onClick={() => { setSortBy('date-asc'); setIsDropdownOpen(false);}} className="bg-slate-800 rounded-2xl p-1 text-white hover:bg-slate-700 transition-all w-full mb-1">
-                            Oldest first
-                        </button>
-                        <button onClick={() => { setSortBy('name-asc'); setIsDropdownOpen(false);}} className="bg-slate-800 rounded-2xl p-1 text-white hover:bg-slate-700 transition-all w-full mb-1">
-                            Name A-Z
-                        </button>
-                        <button onClick={() => { setSortBy('name-desc'); setIsDropdownOpen(false);}} className="bg-slate-800 rounded-2xl p-1 text-white hover:bg-slate-700 transition-all w-full mb-1">
-                            Name Z-A
-                        </button>
-                    </div>}
-            </div>
+            <SortingDropdown isDropdownOpen={isDropdownOpen} setIsDropdownOpen={setIsDropdownOpen} sortBy={sortBy} setSortBy={setSortBy} />
 
             {filteredTasks.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
