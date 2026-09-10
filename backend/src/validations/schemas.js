@@ -11,4 +11,7 @@ const taskSchema = z.object({
     description: z.string().optional()
 });
 
-module.exports = { registerSchema, taskSchema };
+const updateUserSchema = z.object({
+    name: z.string().trim().min(3, "Name must contain at least 3 characters.")
+});
+module.exports = { registerSchema, taskSchema, updateUserSchema };
